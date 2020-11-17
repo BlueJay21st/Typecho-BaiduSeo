@@ -1,14 +1,14 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
- * 百度链接提交
+ * 百度SEO
  * 
- * @package BaiduLinkPush
+ * @package BaiduSeo
  * @author 寒冬日志
  * @version 1.0.0
  * @link https://www.cwlog.net/
  */
-class BaiduLinkPush_Plugin implements Typecho_Plugin_Interface
+class BaiduSeo_Plugin implements Typecho_Plugin_Interface
 {
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
@@ -19,7 +19,8 @@ class BaiduLinkPush_Plugin implements Typecho_Plugin_Interface
      */
     public static function activate()
     {
-        Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('BaiduLinkPush_Plugin', 'render');
+        Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish = array('BaiduSeo_Plugin', 'publish_push');
+        Typecho_Plugin::factory('Widget_Archive')->footer = array('BaiduSeo_Plugin', 'auto_push');
         return _t('请设置接口调用地址');
     }
     
@@ -58,16 +59,15 @@ class BaiduLinkPush_Plugin implements Typecho_Plugin_Interface
     {}
     
     /**
-     * 插件实现方法
+     * 发布文章时使用接口推送
      * 
      * @access public
      * @return void
      */
-    public static function render($content, $edit)
+    public static function publish_push($content, $edit)
     {
-        $api = Typecho_Widget::widget('Widget_Options')->plugin('BaiduLinkPush')->api;
-        if($api === 'NULL' || strpos($api, 'data.zz.baidu.com') !== 7) exit('<script>alert("请为BaiduLinkPush插件配置正确的接口调用地址");location.href="'.$siteUrl.'/admin/manage-posts.php";</script>');
-        
+        $api = Typecho_Widget::widget('Widget_Options')->plugin('BaiduSeo')->api;
+        if($api === 'NULL' || strpos($api, 'data.zz.baidu.com') !== 7) exit('<script>alert("请为BaiduSeo插件配置正确的接口调用地址");location.href="'.$siteUrl.'/admin/manage-posts.php";</script>');
         $db = Typecho_Db::get();
         $siteUrl = Typecho_Widget::widget('Widget_Options')->index;
 
@@ -104,5 +104,28 @@ class BaiduLinkPush_Plugin implements Typecho_Plugin_Interface
         
         $res = json_decode($result, true);
         if(isset($res['error'])) exit('<script>alert("链接提交百度接口失败！错误代码：'.$res['error'].'，错误信息：'.$res['message'].'。");location.href="'.$siteUrl.'/admin/manage-posts.php";</script>');
+    }
+    
+        /**
+     * 用户浏览文章时自动推送
+     * 
+     * @access public
+     * @return void
+     */
+    public static function auto_push()
+    {
+        echo PHP_EOL.'<script>
+(function(){
+  var bp = document.createElement("script");
+  var curProtocol = window.location.protocol.split(":")[0];
+  if (curProtocol === "https"){
+    bp.src = "https://zz.bdstatic.com/linksubmit/push.js";
+  }else{
+    bp.src = "http://push.zhanzhang.baidu.com/push.js";
+  }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>'.PHP_EOL;
     }
 }
