@@ -8,7 +8,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * @version 1.0.0
  * @link https://www.cwlog.net/
  */
-class BaiduSeo_Plugin implements Typecho_Plugin_Interface
+class BaiduSeo_Plugin extends Typecho_Widget implements Typecho_Plugin_Interface
 {
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
